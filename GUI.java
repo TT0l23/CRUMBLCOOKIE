@@ -4,18 +4,34 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+
 public class GUI implements ActionListener {
+    Timer updateTimer;
+    ActionListener guiUpdate;
+
     Cookies logic = new Cookies();
-    Color myColor = new Color(174, 150, 48);
+    Color myColor = new Color(251, 171, 255);
     JFrame frame;
     JButton cookieButton;
     JButton Upgrade1Button;
     JPanel panel;
     JLabel CountLabel;
-    ImageIcon Nummie = new ImageIcon("src/insomnia.png");
+    ImageIcon Nummie = new ImageIcon("src/crumbl.png");
+    boolean CookiesOn=false;
 
 
     public GUI() {
+
+        guiUpdate = _ -> {
+            UpdateCountLabel();
+            if(logic.getUpgrade1Purchases()>0&&!CookiesOn){
+                logic.AutoTimer();
+                CookiesOn=true;
+            }
+        };
+        updateTimer = new Timer(500,guiUpdate);
+        updateTimer.start();
+
         frame = new JFrame("COOKIE CRASH!");
         cookieButton = new JButton(Nummie);
         cookieButton.setPreferredSize(new Dimension(512,512));
@@ -55,10 +71,21 @@ public class GUI implements ActionListener {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         frame.setVisible(true);
+        Upgrade1Button = new JButton("Upgrade (+1 APC) | Cost: "+logic.getUpgrade1Cost()+" Cookies | Owned: "+logic.getUpgrade1Purchases());
+        Upgrade1Button.addActionListener(_ -> {
+            if(logic.buyUpgrade1()){
+                Upgrade1Button.setText("Upgrade (+1 APC) | Cost: "+logic.getUpgrade1Cost()+" Cookies | Owned: "+logic.getUpgrade1Purchases());
+            }else{
+                JOptionPane.showMessageDialog(frame,
+                        "Not enough cookies! You need " + logic.getUpgrade1Cost() + " cookies.",
+                        "Insufficient Cookies",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        });
 
     }
 
-    private void UpdateCountLabel(){
+    public void UpdateCountLabel(){
         CountLabel.setText("Cookies: "+logic.getCookieCount()+" | APC: "+logic.getAmountPerClick());
     }
 
